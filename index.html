@@ -16,12 +16,13 @@ button.p{background:linear-gradient(135deg,var(--ac),#e39a5b);color:#fff;border:
 .sl{display:flex;align-items:center;gap:12px;margin:6px 0 12px}.sl b{font-size:26px;color:var(--ac);min-width:64px}
 input[type=range]{flex:1;accent-color:var(--ac);height:28px}.tk{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin:-8px 4px 10px}
 .fx{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.fx span{border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:12.5px;color:var(--mu)}
-table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:center}th{color:var(--mu);font-weight:600}.ov{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}input[type=text]{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--bd);border-radius:8px;padding:4px 6px;width:84px;text-align:center}input:disabled{opacity:.4}.ok{color:#1b8a52;font-weight:700}.no{color:#c0392b;font-weight:700}
+th,td{border-bottom:1px solid var(--bd);padding:5px 6px;text-align:center}th{color:var(--mu);font-weight:600}.ov{overflow-x:auto}
 .tm{font:600 24px/1 ui-monospace,monospace;color:var(--ac);margin-left:8px}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 svg text{font-family:Inter,system-ui,sans-serif}
 </style></head><body><div class="w">
 <h1>Copper Electroplating <b>· Quick Lab</b></h1>
-<div class="mu">Change the concentration, measure the mass before and after, and see the pattern.</div>
+<div class="mu">Change the concentration, read the balance before and after plating, and record your masses.</div>
 <div class="g">
 <div class="card"><svg id="sc" viewBox="0 0 640 380" width="100%" role="img" aria-label="Lab bench"></svg></div>
 <div class="card"><h3>CuSO₄ concentration (g/100 mL)</h3>
@@ -31,52 +32,41 @@ svg text{font-family:Inter,system-ui,sans-serif}
 <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px"><button class="p" id="go" onclick="go()"></button><span class="tm" id="tm"></span></div>
 <p class="mu" id="hn" style="margin-top:10px"></p></div></div>
 
-<div class="card"><h3>Results table</h3><div class="ov"><table><thead><tr><th>Conc. (g/100 mL)</th><th>Trial</th><th>Mass before (g)</th><th>Mass after (g)</th><th>Mass of Cu deposited (g)</th></tr></thead><tbody id="tb"><tr><td colspan="5" class="mu">Your measurements will be recorded here</td></tr></tbody></table></div></div>
+<div class="card"><h3>Results table – read the balance and type your masses</h3><div class="ov"><table><thead><tr><th>Conc. (g/100 mL)</th><th>Trial</th><th>Mass before (g)</th><th>Mass after (g)</th><th>Mass of Cu deposited (g)</th></tr></thead><tbody id="tb"><tr><td colspan="5" class="mu">Weigh the object, then type the balance reading here</td></tr></tbody></table></div></div>
 
-<div class="card"><h3>Graph</h3><div class="chips" id="gt"></div><svg id="gr" viewBox="0 0 560 300" width="100%"></svg></div>
 </div>
 <script>
 const $=i=>document.getElementById(i),CS=[5,10,15,20,25],rnd=(a,b)=>a+Math.random()*(b-a),I0=x=>.30+.45*(1-Math.exp(-x/10));
-let c=5,ph=0,T={},R=[],pr=0,t0=0,GM={pt:1,jn:1,fit:0};
+let c=5,ph=0,T={},R=[],pr=0,t0=0;
 const col=x=>{const t=(x-5)/20;return`rgb(${Math.round(165-137*t)},${Math.round(210-105*t)},${Math.round(240-44*t)})`};
 function setC(x){c=x;ph=0;pr=0;$('cv').textContent=x;draw()}
-function go(){if(ph==0){T={c,n:R.filter(r=>r.c==c).length+1,i:+rnd(14.2,14.8).toFixed(3),f:null};T.m=I0(c)*600*63.5/(2*96485)*rnd(.96,1.04);R.push(T);ph=1}
+function go(){if(ph==0){T={c,n:R.filter(r=>r.c==c).length+1,i:+rnd(14.2,14.8).toFixed(3),f:null,ei:'',ef:''};T.m=I0(c)*600*63.5/(2*96485)*rnd(.96,1.04);R.push(T);ph=1}
  else if(ph==1){ph=2;pr=0;t0=performance.now();loop();return}
  else if(ph==3){T.f=+(T.i+T.m).toFixed(3);ph=4}
  else if(ph==4){ph=0;pr=0}draw()}
-function loop(){pr=Math.min(1,(performance.now()-t0)/7000);if(pr<1)requestAnimationFrame(loop);else ph=3;draw()}
+function loop(){pr=Math.min(1,(performance.now()-t0)/5000);if(pr<1)requestAnimationFrame(loop);else ph=3;draw()}
 const th=()=>T.m?1+(T.m-.09)/.051*5:0;
-function draw(){$('sl').disabled=ph==2;
+function draw(){$('sl').disabled=ph>=1&&ph<4;const inB=ph==2||ph==3;
  const lcd=ph==1?T.i.toFixed(3):ph==4?T.f.toFixed(3):'0.000';
  let s=`<defs><linearGradient id="cu" x1="0" x2="1"><stop offset="0" stop-color="#e09a5f"/><stop offset=".5" stop-color="#b8662a"/><stop offset="1" stop-color="#8f4a1c"/></linearGradient><linearGradient id="fe" x1="0" x2="1"><stop offset="0" stop-color="#c3cad1"/><stop offset="1" stop-color="#8a939c"/></linearGradient></defs><rect x="0" y="338" width="640" height="42" rx="10" fill="#8a6a4c" opacity=".5"/>
 <rect x="15" y="300" width="170" height="38" rx="8" fill="#39434e"/><rect x="35" y="308" width="130" height="22" rx="4" fill="#0d1a13"/><text x="150" y="325" font-size="17" text-anchor="end" fill="#7dffa6" font-family="ui-monospace,monospace">${lcd} g</text><ellipse cx="100" cy="294" rx="52" ry="8" fill="#aab3bc"/>`;
- if(ph!=2){const cu=ph>=3;s+=`<rect x="${cu?86-th()*.8:86}" y="244" width="${cu?28+th()*1.6:28}" height="46" rx="2" fill="${cu?'url(#cu)':'url(#fe)'}"/>`}
+ if(!inB){const cu=ph>=4;s+=`<rect x="${cu?86-th()*.8:86}" y="244" width="${cu?28+th()*1.6:28}" height="46" rx="2" fill="${cu?'url(#cu)':'url(#fe)'}"/>`}
  const run=ph==2&&pr<1;
  s+=`<path d="M300 38H250" stroke="#222" stroke-width="3"/><rect x="226" y="28" width="24" height="20" rx="3" fill="#ddd" stroke="#666"/><rect x="300" y="8" width="170" height="60" rx="8" fill="#2f3a45" stroke="#1b232b" stroke-width="2"/><text x="385" y="22" font-size="8.5" fill="#cfd6dd" text-anchor="middle" letter-spacing=".6">BATTERY ELIMINATOR</text>
 <circle cx="338" cy="42" r="11" fill="#5b6773" stroke="#9aa6b2"/><line x1="338" y1="42" x2="338" y2="33" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><rect x="375" y="35" width="24" height="13" rx="3" fill="#1a1f25"/><rect x="${run?388:378}" y="37" width="9" height="9" rx="2" fill="#888"/><circle cx="440" cy="41" r="5" fill="${run?'#3ddc6b':'#555'}"/><circle cx="335" cy="68" r="5.5" fill="#d33" stroke="#fff"/><circle cx="435" cy="68" r="5.5" fill="#111" stroke="#fff"/>
 <path d="M335 73V98H322V120" stroke="#d33" stroke-width="3.2" fill="none" stroke-linejoin="round"/><path d="M435 73V98H462V120" stroke="#222" stroke-width="3.2" fill="none" stroke-linejoin="round"/>
 <path d="M250 150V318Q250 332 264 332H506Q520 332 520 318V150" fill="rgba(190,215,235,.12)" stroke="#6b7a88" stroke-width="2.5"/><path d="M252 205H518V317Q518 330 505 330H265Q252 330 252 317Z" fill="${col(c)}" opacity=".9"/>
-<rect x="${322-(ph==2?12-1.5*pr:12)}" y="120" width="${ph==2?24-3*pr:24}" height="185" fill="url(#cu)" rx="2"/>`;
- if(ph==2){const t2=th()*pr;s+=`<rect x="450" y="120" width="24" height="185" fill="url(#fe)" rx="2"/>`;if(t2>.05)s+=`<rect x="${450-t2*.8}" y="205" width="${24+t2*1.6}" height="${100+t2*.8}" fill="url(#cu)" rx="2"/>`;
-  for(let j=0;j<8+(c-5)*.8;j++){const q=(pr*7+j/12)%1;s+=`<circle cx="${345+q*85}" cy="${225+(j*29)%75}" r="3.3" fill="#1f5fc0" opacity=".8"/>`}}
+<rect x="${322-(inB?12-1.5*pr:12)}" y="120" width="${inB?24-3*pr:24}" height="185" fill="url(#cu)" rx="2"/>`;
+ if(inB){const t2=th()*pr;s+=`<rect x="450" y="120" width="24" height="185" fill="url(#fe)" rx="2"/>`;if(t2>.05)s+=`<rect x="${450-t2*.8}" y="205" width="${24+t2*1.6}" height="${100+t2*.8}" fill="url(#cu)" rx="2"/>`;
+  if(run)for(let j=0;j<8+(c-5)*.8;j++){const q=(pr*7+j/12)%1;s+=`<circle cx="${345+q*85}" cy="${225+(j*29)%75}" r="3.3" fill="#1f5fc0" opacity=".8"/>`}}
  s+=`<text x="385" y="355" font-size="13" text-anchor="middle" fill="#fff" font-weight="600">${c} g/100 mL CuSO₄(aq)</text>`;$('sc').innerHTML=s;
  const sec=Math.round(pr*600);$('tm').textContent=ph==2||ph==3?String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'):'';
- const B=['1 · Weigh the object (before)','2 · Start electroplating','⏳ Electroplating…','3 · Weigh the plated object (after)','↻ Next trial'];
+ const B=['1 · Weigh the object (before)','2 · Start electroplating','⏳ Electroplating…','3 · Remove electrode & weigh (after)','↻ Next trial'];
  $('go').textContent=B[ph];$('go').disabled=ph==2;
- $('hn').textContent=['Slide to a concentration, then weigh the metal object.','Mass before is recorded. The object goes into the solution at 6.0 V for 10 minutes.','Watch copper build up on the cathode.','The object has been removed, rinsed and dried – weigh it again.','Slide to another concentration, or repeat this one to check reliability.'][ph];
+ $('hn').textContent=['Slide to a concentration, then weigh the metal object and note the reading.','Note the mass in the table. The object goes into the solution at 6.0 V for 10 minutes.','Watch copper build up on the cathode.','Plating is finished. Click to lift the cathode out, rinse, dry and place it on the balance.','Note the mass in the table. Then slide to another concentration, or repeat this one.'][ph];
  tbl()}
-const dep=r=>r.f==null?null:+(r.f-r.i).toFixed(3);
-function tbl(){if(R.length)$('tb').innerHTML=R.map(r=>`<tr><td>${r.c}</td><td>${r.n}</td><td>${r.i.toFixed(3)}</td><td>${r.f==null?'–':r.f.toFixed(3)}</td><td><b>${dep(r)??'–'}</b></td></tr>`).join('');
- graph(CS.map(x=>[x,R.filter(r=>r.c==x&&r.f!=null).map(dep)]).filter(g=>g[1].length))}
-$('gt').innerHTML=[['pt','Points'],['jn','Join points'],['fit','Line of best fit']].map(([k,l])=>`<button class="${GM[k]?'on':''}" onclick="GM.${k}^=1;this.classList.toggle('on');tbl()">${l}</button>`).join('');
-function graph(G){const mx=Math.max(.16,...G.map(g=>Math.max(...g[1]))*1.15),X=q=>60+q/30*470,Y=q=>250-q/mx*220;let s='<line x1="60" y1="250" x2="530" y2="250" stroke="currentColor"/><line x1="60" y1="30" x2="60" y2="250" stroke="currentColor"/>';
- for(let j=0;j<=4;j++){const q=mx*j/4;s+=`<line x1="60" x2="530" y1="${Y(q)}" y2="${Y(q)}" stroke="currentColor" opacity=".12"/><text x="54" y="${Y(q)+4}" font-size="10" text-anchor="end" fill="currentColor">${q.toFixed(3)}</text>`}
- CS.forEach(x=>s+=`<text x="${X(x)}" y="266" font-size="11" text-anchor="middle" fill="currentColor">${x}</text>`);
- s+='<text x="295" y="288" font-size="11" text-anchor="middle" fill="currentColor">CuSO₄ concentration (g/100 mL)</text><text transform="rotate(-90 14 140)" x="14" y="140" font-size="11" text-anchor="middle" fill="currentColor">Mean mass of Cu deposited (g)</text>';
- const P=G.map(([x,d])=>[x,d.reduce((a,b)=>a+b)/d.length,d]);
- if(GM.jn&&P.length>1)s+=`<polyline fill="none" stroke="#1c8c8c" stroke-width="2" points="${P.map(p=>X(p[0])+','+Y(p[1])).join(' ')}"/>`;
- if(GM.fit&&P.length>1){const n=P.length,sx=P.reduce((a,p)=>a+p[0],0),sy=P.reduce((a,p)=>a+p[1],0),sxy=P.reduce((a,p)=>a+p[0]*p[1],0),sxx=P.reduce((a,p)=>a+p[0]*p[0],0),b=(n*sxy-sx*sy)/(n*sxx-sx*sx||1),a=(sy-b*sx)/n;s+=`<line x1="${X(0)}" y1="${Y(a)}" x2="${X(30)}" y2="${Y(a+b*30)}" stroke="#c2672b" stroke-width="2" stroke-dasharray="6 4"/>`}
- if(GM.pt)P.forEach(([x,m,d])=>{s+=`<line x1="${X(x)}" x2="${X(x)}" y1="${Y(Math.min(...d))}" y2="${Y(Math.max(...d))}" stroke="#c2672b" stroke-width="2"/><circle cx="${X(x)}" cy="${Y(m)}" r="5.5" fill="#c2672b"/>`});
- if(!P.length)s+='<text x="295" y="140" text-anchor="middle" fill="currentColor" opacity=".5">The graph appears as you complete trials</text>';$('gr').innerHTML=s}
+const ok=(r,k)=>r['e'+k]!==''&&r[k]!=null&&Math.abs(parseFloat(r['e'+k])-r[k])<.0015,dep=r=>ok(r,'i')&&ok(r,'f')?+(parseFloat(r.ef)-parseFloat(r.ei)).toFixed(3):null;
+function cell(r,k,i){const bad=r['e'+k]!==''&&!ok(r,k);return`<td><input type="text" ${r[k]==null?'disabled':''} value="${r['e'+k]}" placeholder="g" onchange="R[${i}].e${k}=this.value;tbl()"> ${ok(r,k)?'<span class=ok>✔</span>':bad?'<span class=no title="Check the balance reading">✖</span>':''}</td>`}
+function tbl(){if(R.length)$('tb').innerHTML=R.map((r,i)=>`<tr><td>${r.c}</td><td>${r.n}</td>${cell(r,'i',i)}${cell(r,'f',i)}<td><b>${dep(r)??'–'}</b></td></tr>`).join('')}
 draw();
 </script></body></html>
